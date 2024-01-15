@@ -126,7 +126,7 @@ async def export_with_files(
     if guild:
         channel.guild = guild
 
-    html = (
+    return (
         await Transcript(
             channel=channel,
             limit=limit,
@@ -141,12 +141,6 @@ async def export_with_files(
             path_to_save=path_to_save
         ).export()
     ).html
-
-    path = (path_to_save + f'/transcript.html').replace('//', '/')
-    with open(path, 'wb') as f:
-        f.write(html.encode())
-
-    return html
 
 
 async def raw_export(

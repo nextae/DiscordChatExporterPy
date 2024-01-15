@@ -27,6 +27,8 @@ class Attachment:
     async def build_attachment(self):
         if self.file_path:
             extension = self.attachment.url.rsplit('.', 1)[1]
+            if '?' in extension:
+                extension = extension.split('?', 1)[0]
             self.file_path = Path(f'{self.file_path}.{extension}')
             await self.attachment.save(self.file_path, use_cached=True)
 
