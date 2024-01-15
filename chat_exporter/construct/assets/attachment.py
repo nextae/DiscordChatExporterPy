@@ -21,7 +21,7 @@ class Attachment:
         self.file_path = file_path
         self.file_name = None
         if self.file_path:
-            self.file_name = file_path.split('/')[-1]
+            self.file_name = 'files/' + file_path.split('/')[-1]
 
     async def flow(self):
         await self.build_attachment()
