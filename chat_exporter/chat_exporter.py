@@ -151,7 +151,6 @@ async def export_as_zip(
 
     shutil.make_archive(file_name, 'zip', str(channel.id))
     shutil.rmtree(str(channel.id))
-    os.rmdir(str(channel.id))
 
 
 async def raw_export(
