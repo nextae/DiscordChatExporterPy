@@ -21,11 +21,6 @@ class Attachment:
         self.file_path = file_path
         self.file_name = None
         if self.file_path:
-            extension = self.attachment.url.rsplit('.', 1)[1]
-            if '?' in extension:
-                extension = extension.split('?', 1)[0]
-
-            self.file_path = f'{self.file_path}.{extension}'
             self.file_name = file_path.split('/')[-1]
 
     async def flow(self):

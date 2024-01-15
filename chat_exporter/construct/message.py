@@ -252,9 +252,7 @@ class MessageConstruct:
         for i, a in enumerate(self.message.attachments):
             file_path = None
             if self.path_to_save:
-                file_path = self.path_to_save + f'/{self.index}_{i}'
-
-            print(a.filename)
+                file_path = self.path_to_save + f'/{self.index}_{i}.{a.filename.split(".")[-1]}'
 
             self.attachments += await Attachment(a, self.guild, file_path).flow()
 
