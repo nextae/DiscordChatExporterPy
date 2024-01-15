@@ -1,5 +1,7 @@
 import datetime
 import io
+import os
+import shutil
 from typing import List, Optional
 
 from chat_exporter.construct.transcript import Transcript
@@ -95,8 +97,8 @@ async def export(
     ).html
 
 
-async def export_with_files(
-    path_to_save: str,
+async def export_as_zip(
+    file_name: str,
     channel: discord.TextChannel,
     limit: Optional[int] = None,
     tz_info="UTC",
@@ -111,7 +113,7 @@ async def export_with_files(
     """
     Create a customised transcript of your Discord channel.
     This function will return the transcript which you can then turn in to a file to post wherever.
-    :param path_to_save: string - path where to save all the attachments as well as the html file
+    :param file_name: string - name of the zip file to save the transcript as
     :param channel: discord.TextChannel - channel to Export
     :param limit: (optional) integer - limit of messages to capture
     :param tz_info: (optional) TZ Database Name - set the timezone of your transcript
@@ -126,7 +128,9 @@ async def export_with_files(
     if guild:
         channel.guild = guild
 
-    return (
+    os.mkdir(str(channel.id))
+    os.mkdir(f'{channel.id}/files')
+    html = (
         await Transcript(
             channel=channel,
             limit=limit,
@@ -138,9 +142,15 @@ async def export_with_files(
             after=after,
             support_dev=support_dev,
             bot=bot,
-            path_to_save=path_to_save
+            path_to_save=f'{channel.id}/files'
         ).export()
     ).html
+
+    with open(f'{channel.id}/transcript.html', 'wb') as html_file:
+        html_file.write(html.encode())
+
+    shutil.make_archive(file_name, 'zip', str(channel.id))
+    shutil.rmtree(str(channel.id))
 
 
 async def raw_export(

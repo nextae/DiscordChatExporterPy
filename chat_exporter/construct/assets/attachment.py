@@ -19,6 +19,14 @@ class Attachment:
         self.attachment = attachment
         self.guild = guild
         self.file_path = file_path
+        self.file_name = None
+        if self.file_path:
+            extension = self.attachment.url.rsplit('.', 1)[1]
+            if '?' in extension:
+                extension = extension.split('?', 1)[0]
+
+            self.file_path = f'{self.file_path}.{extension}'
+            self.file_name = file_path.split('/')[-1]
 
     async def flow(self):
         await self.build_attachment()
@@ -26,10 +34,6 @@ class Attachment:
 
     async def build_attachment(self):
         if self.file_path:
-            extension = self.attachment.url.rsplit('.', 1)[1]
-            if '?' in extension:
-                extension = extension.split('?', 1)[0]
-            self.file_path = f'{self.file_path}.{extension}'
             await self.attachment.save(Path(self.file_path), use_cached=True)
 
         if self.attachment.content_type is not None:
@@ -43,13 +47,13 @@ class Attachment:
 
     async def image(self):
         self.attachment = await fill_out(self.guild, img_attachment, [
-            ("ATTACH_URL", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE),
-            ("ATTACH_URL_THUMB", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE)
+            ("ATTACH_URL", self.file_name or self.attachment.proxy_url, PARSE_MODE_NONE),
+            ("ATTACH_URL_THUMB", self.file_name or self.attachment.proxy_url, PARSE_MODE_NONE)
         ])
 
     async def video(self):
         self.attachment = await fill_out(self.guild, video_attachment, [
-            ("ATTACH_URL", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE)
+            ("ATTACH_URL", self.file_name or self.attachment.proxy_url, PARSE_MODE_NONE)
         ])
 
     async def audio(self):
@@ -58,9 +62,9 @@ class Attachment:
 
         self.attachment = await fill_out(self.guild, audio_attachment, [
             ("ATTACH_ICON", file_icon, PARSE_MODE_NONE),
-            ("ATTACH_URL", self.file_path or self.attachment.url, PARSE_MODE_NONE),
+            ("ATTACH_URL", self.file_name or self.attachment.url, PARSE_MODE_NONE),
             ("ATTACH_BYTES", str(file_size), PARSE_MODE_NONE),
-            ("ATTACH_AUDIO", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE),
+            ("ATTACH_AUDIO", self.file_name or self.attachment.proxy_url, PARSE_MODE_NONE),
             ("ATTACH_FILE", str(self.attachment.filename), PARSE_MODE_NONE)
         ])
 
@@ -71,7 +75,7 @@ class Attachment:
 
         self.attachment = await fill_out(self.guild, msg_attachment, [
             ("ATTACH_ICON", file_icon, PARSE_MODE_NONE),
-            ("ATTACH_URL", self.file_path or self.attachment.url, PARSE_MODE_NONE),
+            ("ATTACH_URL", self.file_name or self.attachment.url, PARSE_MODE_NONE),
             ("ATTACH_BYTES", str(file_size), PARSE_MODE_NONE),
             ("ATTACH_FILE", str(self.attachment.filename), PARSE_MODE_NONE)
         ])
