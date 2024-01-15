@@ -95,6 +95,60 @@ async def export(
     ).html
 
 
+async def export_with_files(
+    path_to_save: str,
+    channel: discord.TextChannel,
+    limit: Optional[int] = None,
+    tz_info="UTC",
+    guild: Optional[discord.Guild] = None,
+    bot: Optional[discord.Client] = None,
+    military_time: Optional[bool] = True,
+    fancy_times: Optional[bool] = True,
+    before: Optional[datetime.datetime] = None,
+    after: Optional[datetime.datetime] = None,
+    support_dev: Optional[bool] = True,
+):
+    """
+    Create a customised transcript of your Discord channel.
+    This function will return the transcript which you can then turn in to a file to post wherever.
+    :param path_to_save: string - path where to save all the attachments as well as the html file
+    :param channel: discord.TextChannel - channel to Export
+    :param limit: (optional) integer - limit of messages to capture
+    :param tz_info: (optional) TZ Database Name - set the timezone of your transcript
+    :param guild: (optional) discord.Guild - solution for edpy
+    :param bot: (optional) discord.Client - set getting member role colour
+    :param military_time: (optional) boolean - set military time (24hour clock)
+    :param fancy_times: (optional) boolean - set javascript around time display
+    :param before: (optional) datetime.datetime - allows before time for history
+    :param after: (optional) datetime.datetime - allows after time for history
+    :return: string - transcript file make up
+    """
+    if guild:
+        channel.guild = guild
+
+    html = (
+        await Transcript(
+            channel=channel,
+            limit=limit,
+            messages=None,
+            pytz_timezone=tz_info,
+            military_time=military_time,
+            fancy_times=fancy_times,
+            before=before,
+            after=after,
+            support_dev=support_dev,
+            bot=bot,
+            path_to_save=path_to_save
+        ).export()
+    ).html
+
+    path = (path_to_save + f'/transcript.html').replace('//', '/')
+    with open(path, 'wb') as f:
+        f.write(html.encode())
+
+    return html
+
+
 async def raw_export(
     channel: discord.TextChannel,
     messages: List[discord.Message],

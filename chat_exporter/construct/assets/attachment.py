@@ -1,4 +1,7 @@
 import math
+from pathlib import Path
+
+import discord
 
 from chat_exporter.ext.discord_utils import DiscordUtils
 from chat_exporter.ext.html_generator import (
@@ -12,57 +15,63 @@ from chat_exporter.ext.html_generator import (
 
 
 class Attachment:
-    def __init__(self, attachments, guild):
-        self.attachments = attachments
+    def __init__(self, attachment: discord.Attachment, guild, file_path):
+        self.attachment = attachment
         self.guild = guild
+        self.file_path = file_path
 
     async def flow(self):
         await self.build_attachment()
-        return self.attachments
+        return self.attachment
 
     async def build_attachment(self):
-        if self.attachments.content_type is not None:
-            if "image" in self.attachments.content_type:
+        if self.file_path:
+            extension = self.attachment.url.rsplit('.', 1)[1]
+            self.file_path = Path(f'{self.file_path}.{extension}')
+            await self.attachment.save(self.file_path, use_cached=True)
+
+        if self.attachment.content_type is not None:
+            if "image" in self.attachment.content_type:
                 return await self.image()
-            elif "video" in self.attachments.content_type:
+            elif "video" in self.attachment.content_type:
                 return await self.video()
-            elif "audio" in self.attachments.content_type:
+            elif "audio" in self.attachment.content_type:
                 return await self.audio()
         await self.file()
 
     async def image(self):
-        self.attachments = await fill_out(self.guild, img_attachment, [
-            ("ATTACH_URL", self.attachments.proxy_url, PARSE_MODE_NONE),
-            ("ATTACH_URL_THUMB", self.attachments.proxy_url, PARSE_MODE_NONE)
+        self.attachment = await fill_out(self.guild, img_attachment, [
+            ("ATTACH_URL", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE),
+            ("ATTACH_URL_THUMB", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE)
         ])
 
     async def video(self):
-        self.attachments = await fill_out(self.guild, video_attachment, [
-            ("ATTACH_URL", self.attachments.proxy_url, PARSE_MODE_NONE)
+        self.attachment = await fill_out(self.guild, video_attachment, [
+            ("ATTACH_URL", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE)
         ])
 
     async def audio(self):
         file_icon = DiscordUtils.file_attachment_audio
-        file_size = self.get_file_size(self.attachments.size)
+        file_size = self.get_file_size(self.attachment.size)
 
-        self.attachments = await fill_out(self.guild, audio_attachment, [
+        self.attachment = await fill_out(self.guild, audio_attachment, [
             ("ATTACH_ICON", file_icon, PARSE_MODE_NONE),
-            ("ATTACH_URL", self.attachments.url, PARSE_MODE_NONE),
+            ("ATTACH_URL", self.file_path or self.attachment.url, PARSE_MODE_NONE),
             ("ATTACH_BYTES", str(file_size), PARSE_MODE_NONE),
-            ("ATTACH_AUDIO", self.attachments.proxy_url, PARSE_MODE_NONE),
-            ("ATTACH_FILE", str(self.attachments.filename), PARSE_MODE_NONE)
+            ("ATTACH_AUDIO", self.file_path or self.attachment.proxy_url, PARSE_MODE_NONE),
+            ("ATTACH_FILE", str(self.attachment.filename), PARSE_MODE_NONE)
         ])
 
     async def file(self):
         file_icon = await self.get_file_icon()
 
-        file_size = self.get_file_size(self.attachments.size)
+        file_size = self.get_file_size(self.attachment.size)
 
-        self.attachments = await fill_out(self.guild, msg_attachment, [
+        self.attachment = await fill_out(self.guild, msg_attachment, [
             ("ATTACH_ICON", file_icon, PARSE_MODE_NONE),
-            ("ATTACH_URL", self.attachments.url, PARSE_MODE_NONE),
+            ("ATTACH_URL", self.file_path or self.attachment.url, PARSE_MODE_NONE),
             ("ATTACH_BYTES", str(file_size), PARSE_MODE_NONE),
-            ("ATTACH_FILE", str(self.attachments.filename), PARSE_MODE_NONE)
+            ("ATTACH_FILE", str(self.attachment.filename), PARSE_MODE_NONE)
         ])
 
     @staticmethod
@@ -88,7 +97,7 @@ class Attachment:
             "arj", "pkg", "z"
         )
 
-        extension = self.attachments.url.rsplit('.', 1)[1]
+        extension = self.attachment.url.rsplit('.', 1)[1]
         if extension in acrobat_types:
             return DiscordUtils.file_attachment_acrobat
         elif extension in webcode_types:

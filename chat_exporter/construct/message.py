@@ -61,7 +61,9 @@ class MessageConstruct:
         military_time: bool,
         guild: discord.Guild,
         meta_data: dict,
-        message_dict: dict
+        message_dict: dict,
+        path_to_save: Optional[str],
+        index: int
     ):
         self.message = message
         self.previous_message = previous_message
@@ -69,6 +71,8 @@ class MessageConstruct:
         self.military_time = military_time
         self.guild = guild
         self.message_dict = message_dict
+        self.path_to_save = path_to_save
+        self.index = index
 
         self.time_format = "%A, %e %B %Y %I:%M %p"
         if self.military_time:
@@ -245,8 +249,12 @@ class MessageConstruct:
         for e in self.message.embeds:
             self.embeds += await Embed(e, self.guild).flow()
 
-        for a in self.message.attachments:
-            self.attachments += await Attachment(a, self.guild).flow()
+        for i, a in enumerate(self.message.attachments):
+            file_path = None
+            if self.path_to_save:
+                file_path = (self.path_to_save + f'/{self.index}_{i}').replace('//', '/')
+
+            self.attachments += await Attachment(a, self.guild, file_path).flow()
 
         for c in self.message.components:
             self.components += await Component(c, self.guild).flow()
@@ -434,6 +442,7 @@ async def gather_messages(
     guild: discord.Guild,
     pytz_timezone,
     military_time,
+    path_to_save
 ) -> (str, dict):
     message_html: str = ""
     meta_data: dict = {}
@@ -451,7 +460,7 @@ async def gather_messages(
         messages[0] = message
         messages[0].reference = None
 
-    for message in messages:
+    for index, message in enumerate(messages):
         content_html, meta_data = await MessageConstruct(
             message,
             previous_message,
@@ -460,6 +469,8 @@ async def gather_messages(
             guild,
             meta_data,
             message_dict,
+            path_to_save,
+            index
         ).construct_message()
         message_html += content_html
         previous_message = message

@@ -35,6 +35,7 @@ class TranscriptDAO:
         after: Optional[datetime.datetime],
         support_dev: bool,
         bot: Optional[discord.Client],
+        path_to_save: Optional[str] = None
     ):
         self.channel = channel
         self.messages = messages
@@ -45,6 +46,7 @@ class TranscriptDAO:
         self.after = after
         self.support_dev = support_dev
         self.pytz_timezone = pytz_timezone
+        self.path_to_save = path_to_save
 
         # This is to pass timezone in to mention.py without rewriting
         setattr(discord.Guild, "timezone", self.pytz_timezone)
@@ -58,6 +60,7 @@ class TranscriptDAO:
             self.channel.guild,
             self.pytz_timezone,
             self.military_time,
+            self.path_to_save
         )
         await self.export_transcript(message_html, meta_data)
         clear_cache()
