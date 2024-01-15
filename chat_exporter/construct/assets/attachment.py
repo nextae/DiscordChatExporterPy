@@ -29,8 +29,8 @@ class Attachment:
             extension = self.attachment.url.rsplit('.', 1)[1]
             if '?' in extension:
                 extension = extension.split('?', 1)[0]
-            self.file_path = Path(f'{self.file_path}.{extension}')
-            await self.attachment.save(self.file_path, use_cached=True)
+            self.file_path = f'{self.file_path}.{extension}'
+            await self.attachment.save(Path(self.file_path), use_cached=True)
 
         if self.attachment.content_type is not None:
             if "image" in self.attachment.content_type:
