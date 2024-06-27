@@ -113,6 +113,7 @@ async def export_as_zip(
     before: Optional[datetime.datetime] = None,
     after: Optional[datetime.datetime] = None,
     support_dev: Optional[bool] = True,
+    attachment_handler: Optional[AttachmentHandler] = None,
 ):
     """
     Create a customised transcript of your Discord channel.
@@ -146,7 +147,8 @@ async def export_as_zip(
             after=after,
             support_dev=support_dev,
             bot=bot,
-            path_to_save=f'{channel.id}/files'
+            path_to_save=f'{channel.id}/files',
+            attachment_handler=attachment_handler
         ).export()
     ).html
 
