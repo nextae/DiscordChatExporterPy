@@ -1,6 +1,15 @@
-from chat_exporter.chat_exporter import export, raw_export, quick_export, link, quick_link, export_as_zip
+from chat_exporter.chat_exporter import (
+    export,
+    raw_export,
+    quick_export,
+    link,
+    quick_link,
+    export_as_zip,
+    AttachmentHandler,
+    AttachmentToLocalFileHostHandler,
+    AttachmentToDiscordChannelHandler)
 
-__version__ = "2.6.1"
+__version__ = "2.7.1"
 
 __all__ = (
     export,
@@ -8,5 +17,8 @@ __all__ = (
     quick_export,
     link,
     quick_link,
+    AttachmentHandler,
+    AttachmentToLocalFileHostHandler,
+    AttachmentToDiscordChannelHandler,
     export_as_zip
 )
